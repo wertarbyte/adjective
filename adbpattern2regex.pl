@@ -7,24 +7,26 @@ sub pattern2regex {
         '*' => '.*',
         '[' => '[',
         ']' => ']',
-        '^' => '(?:[^[:alnum:]|[-.%])'
+        '^' => '(?:[^[:alnum:]|[-.%])',
+        '||' => '(?:^|\.)'
     );
     my $re = $pattern;
-    $re =~ s{(.)} { $patmap{$1} || "\Q$1" }ge;
+    $re =~ s{(\|\||.)} { $patmap{$1} || "\Q$1" }ge;
     return $re;
 }
 
 sub read_filter {
     my ($filter) = @_;
-    my ($exception, $start_domain, $start_url);
+    my ($exception, $start_url);
     my $options;
-    while ($filter =~ s/^(@@|\|\||\|#+)//) {
-        print "found $1\n";
+    if ($filter =~ s/^(@@)//) {
+        $exception = 1;
+        print "exception rule\n";
     }
     if ($filter =~ s/\$(.*)$//) {
         $options = $1;
     }
-    print $filter, " [", $options, "]\n";
+    print pattern2regex($filter), " [", $options, "]\n";
 }
 
 while (<STDIN>) {
