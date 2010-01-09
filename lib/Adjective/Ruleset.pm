@@ -12,7 +12,7 @@ sub __pattern2regex {
         '[' => '[',
         ']' => ']',
         '^' => '(?:[^[:alnum:]|[.%-])',
-        '||' => '(?:^|\.)'
+        '||' => '(?:^https?://|\.)'
     );
     my $re = $pattern;
     $re =~ s{(\|\||.)} { $patmap{$1} || "\Q$1" }ge;
@@ -68,10 +68,10 @@ sub pass {
     
     # first try to apply exceptions
     for my $ex (grep {$_->{exception}} @{$self->{rules}}) {
-        return 1 if __apply_rule( $ex, $request);
+        return 1 if __apply_rule($ex, $request);
     }
-    for my $ex (grep {! $_->{exception}} @{$self->{rules}}) {
-        return 0 if __apply_rule( $ex, $request);
+    for my $rule (grep {! $_->{exception}} @{$self->{rules}}) {
+        return 0 if __apply_rule($rule, $request);
     }
     return 1;
 }
