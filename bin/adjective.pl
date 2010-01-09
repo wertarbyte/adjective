@@ -10,6 +10,6 @@ my $filter = new Adjective::ProxyFilter($ruleset);
 
 my $proxy = HTTP::Proxy->new( port => 3180 );
 
-$proxy->push_filter( response => $filter );
+$proxy->push_filter( request => $filter );
 
 $proxy->start;

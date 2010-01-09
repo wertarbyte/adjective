@@ -2,6 +2,7 @@ package Adjective::ProxyFilter;
 use base qw( HTTP::Proxy::HeaderFilter );
 
 use strict;
+require HTTP::Response;
 
 sub init {
     my ($self, $ruleset) = @_;
@@ -9,12 +10,15 @@ sub init {
 }
 
 sub filter {
-    my ($self, $headers, $message) = @_;
+    my ($self, $headers, $request) = @_;
     
-    unless ( $self->{ruleset}->pass( $message->request ) ) {
-        $message->content_type("text/plain");
-        $message->content("blocked by Adjective");
-        print $message->request->uri, " blocked\n";
+    unless ( $self->{ruleset}->pass( $request ) ) {
+        print $request->uri, " blocked\n";
+
+        my $response = HTTP::Response->new(200);
+        $response->content("blocked by Adjective");
+        $response->content_type("text/plain");
+        $self->proxy->response($response);
     }
 }
 
