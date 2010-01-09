@@ -1,8 +1,9 @@
 #!/usr/bin/perl
+use strict;
+use Data::Dumper;
 
 sub pattern2regex {
     my ($pattern) = @_;
-    my $globstr = shift;
     my %patmap = (
         '*' => '.*',
         '[' => '[',
@@ -15,24 +16,30 @@ sub pattern2regex {
     return $re;
 }
 
-sub read_filter {
+sub parse_filter {
     my ($filter) = @_;
-    my ($exception, $start_url);
-    my $options;
-    if ($filter =~ s/^(@@)//) {
-        $exception = 1;
-        print "exception rule\n";
+    my %rule = ();
+
+    if ($filter =~ s/^@@//) {
+        $rule{exception} = 1;
     }
     if ($filter =~ s/\$(.*)$//) {
-        $options = $1;
+        $rule{options} = $1;
     }
-    print pattern2regex($filter), " [", $options, "]\n";
+    
+    $rule{url_regex} = pattern2regex($filter);
+
+    return \%rule;
 }
 
+my @rules = ();
 while (<STDIN>) {
     chop;
     chop;
     next if /^!/;
+    next if /#/;
     next if /^\[.*\]$/;
-    read_filter($_);
+    push @rules, parse_filter($_);
 }
+
+print Dumper(\@rules);
